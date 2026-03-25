@@ -44,7 +44,7 @@
             padding: 10px 0;
         }
         .topbar {
-            max-width: 1100px;
+            max-width: 1200px;
             margin: 0 auto;
             padding: 0 20px;
             display: flex;
@@ -57,7 +57,7 @@
             margin: 0;
             cursor: pointer;
         }
-        #current-date { font-size: 13px; opacity: 0.7; }
+        #current-date { font-size: 12px; opacity: 0.6; }
 
         .controls { display: flex; gap: 10px; align-items: center; }
         .btn {
@@ -71,16 +71,15 @@
         }
         .sync-btn { background: var(--accent); color: white; }
         .theme-btn { background: transparent; border: 1px solid var(--border); color: var(--text); }
-        .btn:hover { opacity: 0.8; transform: translateY(-1px); }
 
-        /* MAIN LAYOUT */
+        /* MAIN LAYOUT - WIDER FOR ARTICLES */
         .container {
-            max-width: 1100px;
+            max-width: 1200px; /* Expanded from 1100px */
             margin: 40px auto;
             padding: 0 20px;
         }
 
-        /* GRID VIEW (Home) */
+        /* HOME GRID */
         #home {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -96,20 +95,14 @@
             border: 1px solid var(--border);
         }
         .article-card:hover { transform: translateY(-5px); }
-        .article-card img {
-            width: 100%;
-            height: 180px;
-            object-fit: cover;
-            display: block;
-        }
+        .article-card img { width: 100%; height: 200px; object-fit: cover; display: block; }
         .card-body { padding: 20px; }
         .card-body h2 { font-family: 'Playfair Display', serif; margin: 0 0 10px; font-size: 1.3rem; }
-        .meta { font-size: 0.8rem; opacity: 0.6; margin-bottom: 10px; }
 
-        /* POST VIEW (Full Article) */
+        /* EXPANDED ARTICLE VIEW */
         #article-view {
             display: none;
-            max-width: 800px;
+            max-width: 1000px; /* EXPANDED to fill the "red boxes" space */
             margin: 40px auto;
             background: var(--box);
             padding: 40px;
@@ -117,13 +110,15 @@
             box-shadow: var(--card-shadow);
         }
         #article-content img {
-            max-width: 100%; /* Fixes the "broken" overflow */
-            height: auto;
+            width: 100%; /* Make images fill the new wider container */
+            max-height: 500px;
+            object-fit: cover;
             border-radius: 8px;
-            margin: 20px 0;
-            display: block;
+            margin-bottom: 30px;
         }
-        #article-view h2 { font-family: 'Playfair Display', serif; font-size: 2.5rem; margin-bottom: 10px; }
+        #article-content h2 { font-family: 'Playfair Display', serif; font-size: 2.8rem; margin-bottom: 10px; }
+        .md-body { font-size: 1.1rem; }
+
         .back-link {
             display: inline-block;
             margin-top: 30px;
@@ -133,18 +128,18 @@
             cursor: pointer;
         }
 
-        /* OBSIDIAN STYLING */
+        /* OBSIDIAN CALLOUTS */
         .callout {
-            padding: 15px;
+            padding: 16px;
             margin: 20px 0;
             border-left: 4px solid var(--accent);
             background: rgba(120, 120, 120, 0.05);
-            border-radius: 4px;
+            border-radius: 6px;
         }
 
-        @media (max-width: 600px) {
-            #article-view { padding: 20px; }
-            #article-view h2 { font-size: 1.8rem; }
+        @media (max-width: 768px) {
+            #article-view { padding: 20px; border-radius: 0; margin-top: 0; }
+            #article-content h2 { font-size: 2rem; }
         }
     </style>
 </head>
@@ -153,7 +148,7 @@
 <div class="header">
     <div class="topbar">
         <div id="current-date"></div>
-        <h1 onclick="goHome()">My Blog</h1>
+        <h1 onclick="navigateToHome()">My Blog</h1>
         <div class="controls">
             <button id="sync-btn" class="btn sync-btn" onclick="refreshFromGitHub()">🔄 Refresh</button>
             <button id="theme-toggle" class="btn theme-btn" onclick="toggleDark()"></button>
@@ -163,11 +158,9 @@
 
 <div id="home" class="container"></div>
 
-<div id="article-view">
+<div id="article-view" class="container">
     <div id="article-content"></div>
-    <div class="container">
-        <span class="back-link" onclick="goHome()">← Back to Home</span>
-    </div>
+    <span class="back-link" onclick="navigateToHome()">← Back to Home</span>
 </div>
 
 <script>
@@ -175,11 +168,29 @@ const GITHUB_CONFIG = {
     owner: "GeorgeHasGames",
     repo: "gamesgeorge",
     branch: "main",
-    postsFolder: "post",
-    imageBaseURL: "https://raw.githubusercontent.com/GeorgeHasGames/gamesgeorge/main/post/"
+    postsFolder: "post"
 };
 
 let articles = [];
+
+// Navigation logic for URLs
+window.onhashchange = handleRouting;
+
+function handleRouting() {
+    const hash = window.location.hash.replace('#', '');
+    if (hash && articles.length > 0) {
+        const found = articles.find(a => slugify(a.id) === hash);
+        if (found) {
+            openArticle(found.id, false);
+            return;
+        }
+    }
+    goHomeUI();
+}
+
+function slugify(text) {
+    return text.toString().toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '').replace(/--+/g, '-').replace('.md','');
+}
 
 function parseFrontmatter(md) {
     const match = md.match(/^---\s*([\s\S]*?)\s*---\s*([\s\S]*)$/);
@@ -213,16 +224,17 @@ async function refreshFromGitHub() {
             };
         }));
         
-        renderHome();
         localStorage.setItem('blog_cache', JSON.stringify(articles));
-    } catch (e) { alert("Error syncing!"); }
+        renderHome();
+        handleRouting(); // Check URL after loading
+    } catch (e) { console.error(e); }
     btn.innerText = "🔄 Refresh";
 }
 
 function renderHome() {
     const home = document.getElementById('home');
     home.innerHTML = articles.map(a => `
-        <div class="article-card" onclick="openArticle('${a.id}')">
+        <div class="article-card" onclick="navigateToArticle('${slugify(a.id)}')">
             ${a.image ? `<img src="${a.image}">` : ''}
             <div class="card-body">
                 <h2>${a.title}</h2>
@@ -231,11 +243,16 @@ function renderHome() {
             </div>
         </div>
     `).join('');
-    goHome();
 }
 
-function openArticle(id) {
+// URL triggers
+function navigateToArticle(slug) { window.location.hash = slug; }
+function navigateToHome() { window.location.hash = ''; }
+
+function openArticle(id, updateHash = true) {
     const a = articles.find(p => p.id === id);
+    if (!a) return;
+    
     const view = document.getElementById('article-content');
     view.innerHTML = `
         ${a.image ? `<img src="${a.image}">` : ''}
@@ -244,12 +261,13 @@ function openArticle(id) {
         <hr style="opacity:0.1; margin: 20px 0;">
         <div class="md-body">${marked.parse(a.content)}</div>
     `;
+    
     document.getElementById('home').style.display = 'none';
     document.getElementById('article-view').style.display = 'block';
     window.scrollTo(0,0);
 }
 
-function goHome() {
+function goHomeUI() {
     document.getElementById('home').style.display = 'grid';
     document.getElementById('article-view').style.display = 'none';
 }
@@ -263,12 +281,18 @@ function toggleDark() {
 
 window.onload = () => {
     const saved = JSON.parse(localStorage.getItem('blog_cache'));
-    if (saved) { articles = saved; renderHome(); }
+    if (saved) { 
+        articles = saved; 
+        renderHome(); 
+        handleRouting();
+    } else {
+        refreshFromGitHub();
+    }
+    
     if (localStorage.getItem('theme') === 'dark') toggleDark();
     else document.getElementById('theme-toggle').innerText = '🌙 Dark';
     document.getElementById('current-date').innerText = new Date().toLocaleDateString();
 };
 </script>
-
 </body>
 </html>
