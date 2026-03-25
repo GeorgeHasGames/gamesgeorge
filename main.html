@@ -170,7 +170,7 @@ body {
     font-family: "Playfair Display", serif;
 }
 
-/* Obsidian Callouts – now fully supported */
+/* Obsidian Callouts */
 .callout {
     border-left: 5px solid var(--accent);
     background: var(--box);
@@ -234,21 +234,20 @@ body {
 </div>
 
 <script>
-// ================== YOUR GITHUB CONFIG (already filled for you!) ==================
+// ================== UPDATED GITHUB CONFIG (matches your repo exactly) ==================
 const GITHUB_CONFIG = {
-    owner: "GeorgeHasGames",           // ← Your exact GitHub username
-    repo: "gamesgeorge",               // ← Your exact repo name
-    branch: "main",                    // Change only if your default branch is "master"
-    postsFolder: "posts",              // Folder inside your repo that holds your .md files
-    imageBaseURL: "https://raw.githubusercontent.com/GeorgeHasGames/gamesgeorge/main/posts/"  
-    // This automatically fixes Obsidian relative images (e.g. ![](photo.jpg) inside posts/)
+    owner: "GeorgeHasGames",
+    repo: "gamesgeorge",
+    branch: "main",
+    postsFolder: "post",                    // ← CHANGED to match your folder name
+    imageBaseURL: "https://raw.githubusercontent.com/GeorgeHasGames/gamesgeorge/main/post/"  
 };
 
 // ================== STATE & STORAGE ==================
 let articles = [];
 const STORAGE_KEY = 'obsidian_blog_cache';
 
-// Simple but robust frontmatter parser
+// Frontmatter parser
 function parseFrontmatter(mdContent) {
     const match = mdContent.match(/^---\s*([\s\S]*?)\s*---\s*([\s\S]*)$/);
     if (!match) return { metadata: {}, content: mdContent.trim() };
@@ -265,15 +264,13 @@ function parseFrontmatter(mdContent) {
     return { metadata, content: match[2].trim() };
 }
 
-// Fix Obsidian formatting (callouts + relative images)
+// Fix Obsidian formatting
 function enhanceMarkdown(md) {
-    // Fix relative images → full GitHub raw URLs (now correctly points inside /posts/)
     md = md.replace(
         /!\[([^\]]*)\]\((?!https?:\/\/|data:)([^)]+)\)/g,
         (match, alt, path) => `![${alt}](${GITHUB_CONFIG.imageBaseURL}${path})`
     );
 
-    // Convert Obsidian callouts > [!type] Title
     md = md.replace(
         /^>\s*\[\!([^\]]+)\](?:\s*(.*))?(?:\n(>.*))*/gm,
         (match, type, title = '', contentBlock = '') => {
@@ -296,15 +293,11 @@ function formatDate(dateStr) {
     return isNaN(d) ? dateStr : d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 }
 
-// ================== RENDER HOME ==================
+// Render home
 function renderHome() {
     const home = document.getElementById('home');
     if (articles.length === 0) {
-        home.innerHTML = `
-            <div class="empty">
-                <h2>No posts yet</h2>
-                <p>Click <strong>🔄 Refresh from GitHub</strong> after you finish the setup below.</p>
-            </div>`;
+        home.innerHTML = `<div class="empty"><h2>No posts yet</h2><p>Click 🔄 Refresh from GitHub</p></div>`;
         return;
     }
     home.innerHTML = articles.map(article => `
@@ -320,11 +313,11 @@ function renderHome() {
     `).join('');
 }
 
-// Load / Save cache
+// Cache
 function loadCache() { const saved = localStorage.getItem(STORAGE_KEY); if (saved) { articles = JSON.parse(saved); renderHome(); } }
 function saveCache() { localStorage.setItem(STORAGE_KEY, JSON.stringify(articles)); }
 
-// ================== REFRESH FROM GITHUB (works on your custom domain!) ==================
+// Refresh from GitHub
 async function refreshFromGitHub() {
     const btn = document.getElementById('sync-btn');
     const originalText = btn.innerHTML;
@@ -334,7 +327,7 @@ async function refreshFromGitHub() {
     try {
         const contentsURL = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.postsFolder}`;
         const res = await fetch(contentsURL, { cache: 'no-store' });
-        if (!res.ok) throw new Error(res.status === 404 ? 'posts/ folder not found in your repo' : `GitHub error ${res.status}`);
+        if (!res.ok) throw new Error(res.status === 404 ? 'post/ folder not found' : `GitHub error ${res.status}`);
 
         const files = await res.json();
         const mdFiles = files.filter(f => f.type === 'file' && f.name.endsWith('.md'));
@@ -369,10 +362,10 @@ async function refreshFromGitHub() {
         articles = newArticles;
         saveCache();
         renderHome();
-        alert(`✅ Synced ${articles.length} posts! Your blog is now live at blog.georgehasgames.com`);
+        alert(`✅ Synced ${articles.length} posts! Your blog is now live.`);
     } catch (err) {
         console.error(err);
-        alert('❌ Sync failed: ' + err.message + '\n\nMake sure the repo is public and you have a "posts/" folder with .md files.');
+        alert('❌ Sync failed: ' + err.message);
     } finally {
         btn.innerHTML = originalText;
         btn.disabled = false;
@@ -408,9 +401,7 @@ function toggleDark() {
 }
 function loadTheme() {
     const saved = localStorage.getItem('theme');
-    if (saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-        document.body.classList.add('dark');
-    }
+    if (saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches)) document.body.classList.add('dark');
     document.getElementById('theme-toggle').innerHTML = document.body.classList.contains('dark') ? '☀️ Light Mode' : '🌙 Dark Mode';
 }
 
