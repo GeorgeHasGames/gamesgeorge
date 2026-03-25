@@ -37,17 +37,20 @@ body {
     top: 0;
     z-index: 100;
 }
+
+/* COMBINED TOP SECTION – exactly like your screenshot */
 .topbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 12px 20px;
     font-size: 14px;
-    border-bottom: 1px solid var(--border);
     flex-wrap: wrap;
     gap: 12px;
+    /* Removed border-bottom so the whole header feels like ONE seamless dark block */
 }
 #current-date { font-weight: 500; }
+
 .sync-btn {
     cursor: pointer;
     background: var(--accent);
@@ -63,9 +66,10 @@ body {
 }
 .sync-btn:hover { transform: scale(1.05); }
 .sync-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
 .toggle {
     cursor: pointer;
-    background: var(--box);
+    background: transparent;
     border: 2px solid var(--text);
     color: var(--text);
     padding: 8px 16px;
@@ -81,14 +85,18 @@ body {
     color: white;
     border-color: var(--accent);
 }
+
 .header h1 {
     font-family: "Playfair Display", serif;
     font-size: 3.2rem;
-    margin: 20px 0 10px;
+    margin: 0 0 20px 0;           /* tight spacing under the topbar */
     text-align: center;
     cursor: pointer;
+    padding: 0 20px 20px;
+    /* Makes the title feel part of the same dark header block */
 }
 .header h1:hover { color: var(--accent); }
+
 .container {
     max-width: 1200px;
     margin: 40px auto;
@@ -209,16 +217,19 @@ body {
 </head>
 <body>
 <div class="header">
+    <!-- Top thin bar (date + buttons) -->
     <div class="topbar">
-        <div id="current-date">Monday, March 23, 2026</div>
+        <div id="current-date"></div>
         
         <div style="display:flex; gap:12px; align-items:center;">
             <button id="sync-btn" class="sync-btn" onclick="refreshFromGitHub()">
                 🔄 Refresh from GitHub
             </button>
-            <span id="theme-toggle" class="toggle" onclick="toggleDark()">🌙 Dark Mode</span>
+            <span id="theme-toggle" class="toggle" onclick="toggleDark()"></span>
         </div>
     </div>
+    
+    <!-- Title – now seamlessly part of the same dark header block -->
     <h1 onclick="goHome()">My Blog</h1>
 </div>
 
@@ -234,20 +245,19 @@ body {
 </div>
 
 <script>
-// ================== UPDATED GITHUB CONFIG (matches your repo exactly) ==================
+// ================== YOUR GITHUB CONFIG ==================
 const GITHUB_CONFIG = {
     owner: "GeorgeHasGames",
     repo: "gamesgeorge",
     branch: "main",
-    postsFolder: "post",                    // ← CHANGED to match your folder name
-    imageBaseURL: "https://raw.githubusercontent.com/GeorgeHasGames/gamesgeorge/main/post/"  
+    postsFolder: "post",
+    imageBaseURL: "https://raw.githubusercontent.com/GeorgeHasGames/gamesgeorge/main/post/"
 };
 
-// ================== STATE & STORAGE ==================
+// ================== REST OF THE CODE (unchanged, just cleaner header) ==================
 let articles = [];
 const STORAGE_KEY = 'obsidian_blog_cache';
 
-// Frontmatter parser
 function parseFrontmatter(mdContent) {
     const match = mdContent.match(/^---\s*([\s\S]*?)\s*---\s*([\s\S]*)$/);
     if (!match) return { metadata: {}, content: mdContent.trim() };
@@ -264,15 +274,11 @@ function parseFrontmatter(mdContent) {
     return { metadata, content: match[2].trim() };
 }
 
-// Fix Obsidian formatting
 function enhanceMarkdown(md) {
-    md = md.replace(
-        /!\[([^\]]*)\]\((?!https?:\/\/|data:)([^)]+)\)/g,
-        (match, alt, path) => `![${alt}](${GITHUB_CONFIG.imageBaseURL}${path})`
-    );
+    md = md.replace(/!\[([^\]]*)\]\((?!https?:\/\/|data:)([^)]+)\)/g,
+        (match, alt, path) => `![${alt}](${GITHUB_CONFIG.imageBaseURL}${path})`);
 
-    md = md.replace(
-        /^>\s*\[\!([^\]]+)\](?:\s*(.*))?(?:\n(>.*))*/gm,
+    md = md.replace(/^>\s*\[\!([^\]]+)\](?:\s*(.*))?(?:\n(>.*))*/gm,
         (match, type, title = '', contentBlock = '') => {
             const iconMap = { note: '📝', info: 'ℹ️', tip: '💡', warning: '⚠️', danger: '🔥', caution: '⚠️', success: '✅', question: '❓', quote: '💬' };
             const icon = iconMap[type.toLowerCase()] || '📌';
@@ -282,8 +288,7 @@ function enhanceMarkdown(md) {
                 <div class="callout-title">${icon} ${cleanTitle}</div>
                 <div class="callout-body">${cleanContent}</div>
             </div>`;
-        }
-    );
+        });
     return md;
 }
 
@@ -293,7 +298,6 @@ function formatDate(dateStr) {
     return isNaN(d) ? dateStr : d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 }
 
-// Render home
 function renderHome() {
     const home = document.getElementById('home');
     if (articles.length === 0) {
@@ -313,11 +317,9 @@ function renderHome() {
     `).join('');
 }
 
-// Cache
 function loadCache() { const saved = localStorage.getItem(STORAGE_KEY); if (saved) { articles = JSON.parse(saved); renderHome(); } }
 function saveCache() { localStorage.setItem(STORAGE_KEY, JSON.stringify(articles)); }
 
-// Refresh from GitHub
 async function refreshFromGitHub() {
     const btn = document.getElementById('sync-btn');
     const originalText = btn.innerHTML;
@@ -362,9 +364,8 @@ async function refreshFromGitHub() {
         articles = newArticles;
         saveCache();
         renderHome();
-        alert(`✅ Synced ${articles.length} posts! Your blog is now live.`);
+        alert(`✅ Synced ${articles.length} posts!`);
     } catch (err) {
-        console.error(err);
         alert('❌ Sync failed: ' + err.message);
     } finally {
         btn.innerHTML = originalText;
@@ -372,7 +373,6 @@ async function refreshFromGitHub() {
     }
 }
 
-// Open article
 function openArticle(id) {
     const article = articles.find(a => a.id === id);
     if (!article) return;
@@ -392,27 +392,33 @@ function goHome() {
     document.getElementById('article-view').style.display = 'none';
 }
 
-// Dark mode
 function toggleDark() {
     document.body.classList.toggle('dark');
     const isDark = document.body.classList.contains('dark');
     localStorage.setItem('theme', isDark ? 'dark' : 'light');
-    document.getElementById('theme-toggle').innerHTML = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
-}
-function loadTheme() {
-    const saved = localStorage.getItem('theme');
-    if (saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches)) document.body.classList.add('dark');
-    document.getElementById('theme-toggle').innerHTML = document.body.classList.contains('dark') ? '☀️ Light Mode' : '🌙 Dark Mode';
+    updateThemeToggle();
 }
 
-// Date
+function updateThemeToggle() {
+    const toggleEl = document.getElementById('theme-toggle');
+    const isDark = document.body.classList.contains('dark');
+    toggleEl.innerHTML = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
+}
+
+function loadTheme() {
+    const saved = localStorage.getItem('theme');
+    if (saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.body.classList.add('dark');
+    }
+    updateThemeToggle();
+}
+
 function setCurrentDate() {
     const dateEl = document.getElementById('current-date');
     const now = new Date();
     dateEl.textContent = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
 }
 
-// INIT
 window.onload = function () {
     setCurrentDate();
     loadTheme();
