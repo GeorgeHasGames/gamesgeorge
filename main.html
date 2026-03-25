@@ -1,131 +1,176 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>My Blog • Obsidian Sync</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&amp;family=Inter:wght@400;500&amp;display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-<style>
-:root {
-    --bg: #f8f9fa;
-    --text: #111111;
-    --box: #ffffff;
-    --border: #e0e0e0;
-    --accent: #0066cc;
-}
-.dark {
-    --bg: #0f0f0f;
-    --text: #eeeeee;
-    --box: #1a1a1a;
-    --border: #333333;
-    --accent: #4da3ff;
-}
-* { box-sizing: border-box; }
-body {
-    margin: 0;
-    font-family: 'Inter', system-ui, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    line-height: 1.7;
-    transition: background 0.3s ease, color 0.3s ease;
-}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Blog • Obsidian Sync</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        :root {
+            --bg: #f8f9fa;
+            --text: #111111;
+            --box: #ffffff;
+            --border: #e0e0e0;
+            --accent: #0066cc;
+            --card-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        .dark {
+            --bg: #0f0f0f;
+            --text: #eeeeee;
+            --box: #1a1a1a;
+            --border: #333333;
+            --accent: #4da3ff;
+            --card-shadow: 0 4px 25px rgba(0,0,0,0.4);
+        }
 
-/* REFINED HEADER */
-.header {
-    background: var(--box);
-    border-bottom: 1px solid var(--border);
-    position: sticky;
-    top: 0;
-    z-index: 100;
-}
-.topbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 20px;
-    max-width: 1200px;
-    margin: 0 auto;
-}
-#current-date { font-size: 14px; font-weight: 500; opacity: 0.8; }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: 'Inter', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
 
-.sync-btn {
-    cursor: pointer;
-    background: var(--accent);
-    color: white;
-    border: none;
-    padding: 6px 14px;
-    border-radius: 6px;
-    font-size: 13px;
-    font-weight: 600;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    transition: 0.2s;
-}
-.sync-btn:hover { opacity: 0.9; }
+        /* HEADER */
+        .header {
+            background: var(--box);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            padding: 10px 0;
+        }
+        .topbar {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .topbar h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            margin: 0;
+            cursor: pointer;
+        }
+        #current-date { font-size: 13px; opacity: 0.7; }
 
-.toggle {
-    cursor: pointer;
-    font-size: 13px;
-    font-weight: 500;
-    padding: 6px 12px;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-}
+        .controls { display: flex; gap: 10px; align-items: center; }
+        .btn {
+            cursor: pointer;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+        .sync-btn { background: var(--accent); color: white; }
+        .theme-btn { background: transparent; border: 1px solid var(--border); color: var(--text); }
+        .btn:hover { opacity: 0.8; transform: translateY(-1px); }
 
-.container {
-    max-width: 1200px;
-    margin: 40px auto;
-    padding: 0 20px;
-}
+        /* MAIN LAYOUT */
+        .container {
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
 
-/* CARDS */
-#home {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: 24px;
-}
-.article {
-    background: var(--box);
-    border-radius: 10px;
-    overflow: hidden;
-    border: 1px solid var(--border);
-    cursor: pointer;
-    transition: transform 0.2s ease;
-}
-.article:hover { transform: translateY(-4px); }
-.article img { width: 100%; height: 160px; object-fit: cover; }
-.article-content { padding: 18px; }
-.article h2 { font-family: "Playfair Display", serif; margin: 0 0 8px; font-size: 1.3rem; }
-.meta { font-size: 0.8rem; opacity: 0.6; margin-bottom: 10px; }
-.read-more { color: var(--accent); font-weight: 600; font-size: 0.9rem; }
+        /* GRID VIEW (Home) */
+        #home {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+        }
+        .article-card {
+            background: var(--box);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            border: 1px solid var(--border);
+        }
+        .article-card:hover { transform: translateY(-5px); }
+        .article-card img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            display: block;
+        }
+        .card-body { padding: 20px; }
+        .card-body h2 { font-family: 'Playfair Display', serif; margin: 0 0 10px; font-size: 1.3rem; }
+        .meta { font-size: 0.8rem; opacity: 0.6; margin-bottom: 10px; }
 
-#article-view { display: none; max-width: 800px; margin: 40px auto; background: var(--box); padding: 40px; border-radius: 12px; }
-</style>
+        /* POST VIEW (Full Article) */
+        #article-view {
+            display: none;
+            max-width: 800px;
+            margin: 40px auto;
+            background: var(--box);
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+        }
+        #article-content img {
+            max-width: 100%; /* Fixes the "broken" overflow */
+            height: auto;
+            border-radius: 8px;
+            margin: 20px 0;
+            display: block;
+        }
+        #article-view h2 { font-family: 'Playfair Display', serif; font-size: 2.5rem; margin-bottom: 10px; }
+        .back-link {
+            display: inline-block;
+            margin-top: 30px;
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* OBSIDIAN STYLING */
+        .callout {
+            padding: 15px;
+            margin: 20px 0;
+            border-left: 4px solid var(--accent);
+            background: rgba(120, 120, 120, 0.05);
+            border-radius: 4px;
+        }
+
+        @media (max-width: 600px) {
+            #article-view { padding: 20px; }
+            #article-view h2 { font-size: 1.8rem; }
+        }
+    </style>
 </head>
 <body>
 
 <div class="header">
     <div class="topbar">
         <div id="current-date"></div>
-        <h1 style="font-family:'Playfair Display'; font-size: 1.5rem; margin:0; cursor:pointer;" onclick="goHome()">My Blog</h1>
-        <div style="display:flex; gap:10px; align-items:center;">
-            <button id="sync-btn" class="sync-btn" onclick="refreshFromGitHub()">🔄 Refresh</button>
-            <span id="theme-toggle" class="toggle" onclick="toggleDark()"></span>
+        <h1 onclick="goHome()">My Blog</h1>
+        <div class="controls">
+            <button id="sync-btn" class="btn sync-btn" onclick="refreshFromGitHub()">🔄 Refresh</button>
+            <button id="theme-toggle" class="btn theme-btn" onclick="toggleDark()"></button>
         </div>
     </div>
 </div>
 
 <div id="home" class="container"></div>
 
-<div id="article-view" class="container">
+<div id="article-view">
     <div id="article-content"></div>
-    <span class="read-more" onclick="goHome()" style="cursor:pointer; display:block; margin-top:30px;">← Back to Home</span>
+    <div class="container">
+        <span class="back-link" onclick="goHome()">← Back to Home</span>
+    </div>
 </div>
 
 <script>
-// ================== GITHUB CONFIG ==================
 const GITHUB_CONFIG = {
     owner: "GeorgeHasGames",
     repo: "gamesgeorge",
@@ -135,142 +180,73 @@ const GITHUB_CONFIG = {
 };
 
 let articles = [];
-const STORAGE_KEY = 'obsidian_blog_cache';
 
-function parseFrontmatter(mdContent) {
-    const match = mdContent.match(/^---\s*([\s\S]*?)\s*---\s*([\s\S]*)$/);
-    if (!match) return { metadata: {}, content: mdContent.trim() };
-    const yaml = match[1];
-    const metadata = {};
-    yaml.split('\n').forEach(line => {
-        const colon = line.indexOf(':');
-        if (colon === -1) return;
-        const key = line.slice(0, colon).trim();
-        let value = line.slice(colon + 1).trim();
-        if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) value = value.slice(1, -1);
-        if (key) metadata[key] = value;
+function parseFrontmatter(md) {
+    const match = md.match(/^---\s*([\s\S]*?)\s*---\s*([\s\S]*)$/);
+    if (!match) return { metadata: {}, content: md };
+    const meta = {};
+    match[1].split('\n').forEach(line => {
+        const [key, ...val] = line.split(':');
+        if (key) meta[key.trim()] = val.join(':').trim();
     });
-    return { metadata, content: match[2].trim() };
+    return { metadata: meta, content: match[2].trim() };
 }
 
-// Enhanced Markdown: Obsidian callouts + Discord ||spoilers||
-function enhanceMarkdown(md) {
-    // Fix relative images
-    md = md.replace(/!\[([^\]]*)\]\((?!https?:\/\/|data:)([^)]+)\)/g,
-        (match, alt, path) => `![${alt}](${GITHUB_CONFIG.imageBaseURL}${path})`);
+async function refreshFromGitHub() {
+    const btn = document.getElementById('sync-btn');
+    btn.innerText = "⏳ Loading...";
+    try {
+        const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.postsFolder}`);
+        const files = await res.json();
+        const mdFiles = files.filter(f => f.name.endsWith('.md'));
 
-    // Obsidian callouts
-    md = md.replace(/^>\s*\[\!([^\]]+)\](?:\s*(.*))?(?:\n(>.*))*/gm,
-        (match, type, title = '', contentBlock = '') => {
-            const iconMap = { note: '📝', info: 'ℹ️', tip: '💡', warning: '⚠️', danger: '🔥', caution: '⚠️', success: '✅', question: '❓', quote: '💬' };
-            const icon = iconMap[type.toLowerCase()] || '📌';
-            const cleanContent = contentBlock.replace(/^>\s*/gm, '').trim();
-            const cleanTitle = title.trim();
-            return `<div class="callout ${type.toLowerCase()}">
-                <div class="callout-title">${icon} ${cleanTitle}</div>
-                <div class="callout-body">${cleanContent}</div>
-            </div>`;
-        });
-
-    // Discord spoilers ||text||
-    md = md.replace(/\|\|(.+?)\|\|/g, '<span class="spoiler" onclick="this.classList.toggle(\'revealed\')">$1</span>');
-
-    return md;
-}
-
-function formatDate(dateStr) {
-    if (!dateStr) return 'No date';
-    const d = new Date(dateStr);
-    return isNaN(d) ? dateStr : d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+        articles = await Promise.all(mdFiles.map(async file => {
+            const raw = await (await fetch(file.download_url)).text();
+            const { metadata, content } = parseFrontmatter(raw);
+            return {
+                id: file.name,
+                title: metadata.title || file.name.replace('.md', ''),
+                date: metadata.date || 'Recent',
+                image: metadata.image || null,
+                content: content,
+                preview: content.slice(0, 120) + '...'
+            };
+        }));
+        
+        renderHome();
+        localStorage.setItem('blog_cache', JSON.stringify(articles));
+    } catch (e) { alert("Error syncing!"); }
+    btn.innerText = "🔄 Refresh";
 }
 
 function renderHome() {
     const home = document.getElementById('home');
-    if (articles.length === 0) {
-        home.innerHTML = `<div class="empty"><h2>No posts yet</h2><p>Click 🔄 Refresh from GitHub</p></div>`;
-        return;
-    }
-    home.innerHTML = articles.map(article => `
-        <div class="article" onclick="openArticle('${article.id}')">
-            ${article.image ? `<img src="${article.image}" alt="${article.title}">` : ''}
-            <div class="article-content">
-                <h2>${article.title}</h2>
-                <div class="meta">${article.date} • ${article.readTime}</div>
-                <p>${article.preview}</p>
-                <span class="read-more">Read more →</span>
+    home.innerHTML = articles.map(a => `
+        <div class="article-card" onclick="openArticle('${a.id}')">
+            ${a.image ? `<img src="${a.image}">` : ''}
+            <div class="card-body">
+                <h2>${a.title}</h2>
+                <div class="meta">${a.date}</div>
+                <p>${a.preview}</p>
             </div>
         </div>
     `).join('');
-}
-
-function loadCache() { const saved = localStorage.getItem(STORAGE_KEY); if (saved) { articles = JSON.parse(saved); renderHome(); } }
-function saveCache() { localStorage.setItem(STORAGE_KEY, JSON.stringify(articles)); }
-
-async function refreshFromGitHub() {
-    const btn = document.getElementById('sync-btn');
-    const originalText = btn.innerHTML;
-    btn.innerHTML = '⏳ Fetching...';
-    btn.disabled = true;
-
-    try {
-        const contentsURL = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.postsFolder}`;
-        const res = await fetch(contentsURL, { cache: 'no-store' });
-        if (!res.ok) throw new Error(res.status === 404 ? 'post/ folder not found' : `GitHub error ${res.status}`);
-
-        const files = await res.json();
-        const mdFiles = files.filter(f => f.type === 'file' && f.name.endsWith('.md'));
-
-        const newArticles = [];
-        for (const file of mdFiles) {
-            const rawURL = `https://raw.githubusercontent.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/${GITHUB_CONFIG.branch}/${GITHUB_CONFIG.postsFolder}/${file.name}`;
-            const text = await (await fetch(rawURL)).text();
-            
-            const { metadata, content } = parseFrontmatter(text);
-            const title = metadata.title || file.name.replace('.md', '').replace(/-/g, ' ');
-            const preview = metadata.preview || content.replace(/[#*_`]/g, '').slice(0, 160) + '...';
-            const readTime = metadata.readTime || Math.max(2, Math.ceil(content.split(/\s+/).length / 200)) + ' min';
-            const image = metadata.image || null;
-
-            const enhancedContent = enhanceMarkdown(content);
-            const sortDate = new Date(metadata.date || '1970-01-01');
-
-            newArticles.push({
-                id: file.name,
-                title: title,
-                preview: preview,
-                image: image,
-                date: formatDate(metadata.date),
-                readTime: readTime,
-                fullContent: enhancedContent,
-                sortDate: isNaN(sortDate) ? new Date(0) : sortDate
-            });
-        }
-
-        newArticles.sort((a, b) => b.sortDate - a.sortDate);
-        articles = newArticles;
-        saveCache();
-        renderHome();
-        alert(`✅ Synced ${articles.length} posts!`);
-    } catch (err) {
-        alert('❌ Sync failed: ' + err.message);
-    } finally {
-        btn.innerHTML = originalText;
-        btn.disabled = false;
-    }
+    goHome();
 }
 
 function openArticle(id) {
-    const article = articles.find(a => a.id === id);
-    if (!article) return;
-    const contentArea = document.getElementById('article-content');
-    contentArea.innerHTML = `
-        ${article.image ? `<img src="${article.image}" alt="${article.title}">` : ''}
-        <h2>${article.title}</h2>
-        <div class="meta">${article.date} • ${article.readTime}</div>
-        <div class="markdown">${marked.parse(article.fullContent)}</div>
+    const a = articles.find(p => p.id === id);
+    const view = document.getElementById('article-content');
+    view.innerHTML = `
+        ${a.image ? `<img src="${a.image}">` : ''}
+        <h2>${a.title}</h2>
+        <div class="meta">${a.date}</div>
+        <hr style="opacity:0.1; margin: 20px 0;">
+        <div class="md-body">${marked.parse(a.content)}</div>
     `;
     document.getElementById('home').style.display = 'none';
     document.getElementById('article-view').style.display = 'block';
+    window.scrollTo(0,0);
 }
 
 function goHome() {
@@ -281,31 +257,18 @@ function goHome() {
 function toggleDark() {
     document.body.classList.toggle('dark');
     const isDark = document.body.classList.contains('dark');
+    document.getElementById('theme-toggle').innerText = isDark ? '☀️ Light' : '🌙 Dark';
     localStorage.setItem('theme', isDark ? 'dark' : 'light');
-    updateThemeToggle();
-}
-function updateThemeToggle() {
-    const toggleEl = document.getElementById('theme-toggle');
-    const isDark = document.body.classList.contains('dark');
-    toggleEl.innerHTML = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
-}
-function loadTheme() {
-    const saved = localStorage.getItem('theme');
-    if (saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches)) document.body.classList.add('dark');
-    updateThemeToggle();
-}
-function setCurrentDate() {
-    const dateEl = document.getElementById('current-date');
-    const now = new Date();
-    dateEl.textContent = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
 }
 
-window.onload = function () {
-    setCurrentDate();
-    loadTheme();
-    loadCache();
-    renderHome();
+window.onload = () => {
+    const saved = JSON.parse(localStorage.getItem('blog_cache'));
+    if (saved) { articles = saved; renderHome(); }
+    if (localStorage.getItem('theme') === 'dark') toggleDark();
+    else document.getElementById('theme-toggle').innerText = '🌙 Dark';
+    document.getElementById('current-date').innerText = new Date().toLocaleDateString();
 };
 </script>
+
 </body>
 </html>
