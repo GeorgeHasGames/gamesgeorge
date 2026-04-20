@@ -1,7 +1,7 @@
 ---
 title: My First Obsidian Blog Post
 date: 2026-03-24
-image: https://picsum.photos/id/1015/1200/630
+image: https://i.postimg.cc/nz2XGGkW/Wordpress-(1).png
 preview: This is a test post to make sure everything works!
 readTime: 3 min
 ---
