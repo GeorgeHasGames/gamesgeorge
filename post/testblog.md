@@ -1,5 +1,5 @@
 ---
-title: My First Obsidian Blog Post
+title: The problem with WordPress
 date: 2026-03-24
 image: https://i.postimg.cc/nz2XGGkW/Wordpress-(1).png
 preview: This is a test post to make sure everything works!
